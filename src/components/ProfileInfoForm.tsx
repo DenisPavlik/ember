@@ -19,15 +19,20 @@ export default function ProfileInfoForm({ profileInfo }: Props) {
   const [avatarUrl, setAvatarUrl] = useState(profileInfo?.avatarUrl || "");
 
   async function handleFormAction(formData: FormData) {
-    await saveProfile(formData);
-    toast.success("Profile saved!");
+    try {
+      await saveProfile(formData);
+      toast.success("Profile saved!");
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to save profile.')
+    }
   }
 
   return (
     <form action={handleFormAction}>
       <div className="bg-gray-100 h-48 rounded-lg relative mb-4">
         <Image
-          src={coverUrl}
+          priority
+          src={coverUrl || '/images/bgCover.jpg'}
           alt="coverUrl"
           width={1024}
           height={1024}
@@ -35,7 +40,7 @@ export default function ProfileInfoForm({ profileInfo }: Props) {
         />
         <div className="absolute z-10 -bottom-4 left-4 bg-gray-200 rounded-lg size-24">
           <div className="rounded-lg size-24 overflow-hidden">
-            <Image src={avatarUrl} alt="avatar" width={120} height={120} />
+            <Image src={avatarUrl || '/images/avatar.png'} alt="avatar" width={120} height={120} />
           </div>
           <div className="absolute -bottom-2 -right-2">
             <UploadButton onUploadComplete={setAvatarUrl} />
@@ -67,7 +72,7 @@ export default function ProfileInfoForm({ profileInfo }: Props) {
             name="username"
             defaultValue={profileInfo?.username}
             type="text"
-            placeholder="username"
+            placeholder="alex"
           />
         </div>
         <div>
@@ -79,7 +84,7 @@ export default function ProfileInfoForm({ profileInfo }: Props) {
             name="displayName"
             defaultValue={profileInfo?.displayName}
             type="text"
-            placeholder="display name"
+            placeholder="Alex"
           />
         </div>
       </div>
@@ -91,7 +96,7 @@ export default function ProfileInfoForm({ profileInfo }: Props) {
           id="bioIn"
           name="bio"
           defaultValue={profileInfo?.bio}
-          placeholder="bio"
+          placeholder="Hi, my name is Alex and I am..."
         ></textarea>
       </div>
       <div className="flex items-center justify-between">

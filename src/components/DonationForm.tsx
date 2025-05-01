@@ -80,7 +80,7 @@ export default function DonationForm({email}: {email: string}) {
         />
       </div>
       <div className="mt-2">
-        <input type="text" name="name" placeholder="Your name" />
+        <input type="text" name="name" placeholder="Your name" required />
       </div>
       <div className="mt-2">
         <textarea name="message" placeholder="Say something nice"></textarea>

@@ -22,7 +22,7 @@ export default async function SingleProfilePage({ params }: Props) {
   });
 
   if (!profileInfoDoc) {
-    return <div>404 - Profile not fuond</div>;
+    return <div>404 - Profile not found</div>;
   }
 
   const donations: Donation[] = await DonationModel.find({
@@ -35,18 +35,19 @@ export default async function SingleProfilePage({ params }: Props) {
       <DonationStatus />
       <div className="w-full h-48">
         <Image
-          src={profileInfoDoc.coverUrl}
+          priority
+          src={profileInfoDoc.coverUrl || '/images/bgCover.jpg'}
           alt="coverUrl"
           width={2024}
           height={2024}
-          className="h-48 object-cover object-center"
+          className="h-48 w-full object-cover object-center"
         />
       </div>
       <div className="max-w-2xl mx-auto px-2 relative -mt-16">
         <div className="flex items-end gap-3">
           <div className="size-36 overflow-hidden rounded-xl border-2 border-white">
             <Image
-              src={profileInfoDoc.avatarUrl}
+              src={profileInfoDoc.avatarUrl || '/images/avatar.png'}
               alt="coverUrl"
               width={256}
               height={256}
@@ -65,18 +66,18 @@ export default async function SingleProfilePage({ params }: Props) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          <div className="bg-white rounded-xl p-4 shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div className="bg-white rounded-xl p-4 shadow-sm  max-h-96 overflow-auto">
             <h3 className="font-semibold">About {profileInfoDoc.username}</h3>
             {profileInfoDoc.bio}
             <hr className="my-4" />
             <h3 className="font-semibold mt-6">Recent supporters:</h3>
-            {!donations.length && (
+            {donations.length === 0 && (
               <>
-                <p>no recent donations</p>
+                <p className="text-sm text-gray-500 mt-4 w-full">No recent donations</p>
               </>
             )}
-            {donations.length && (
+            {donations.length > 0 && (
               <div className="mt-2">
                 {donations.map((donation) => (
                   <div key={donation.name} className="py-2">
@@ -89,7 +90,7 @@ export default async function SingleProfilePage({ params }: Props) {
                           : "a coffee"}
                       </span>
                     </h3>
-                    <p className="bg-gray-100 rounded-md p-2">
+                    <p className="bg-gray-100 rounded-md p-2 mt-1">
                       {donation.message}
                     </p>
                   </div>
@@ -97,7 +98,7 @@ export default async function SingleProfilePage({ params }: Props) {
               </div>
             )}
           </div>
-          <div className="bg-white rounded-xl p-4 shadow-sm">
+          <div className="bg-white rounded-xl p-4 shadow-sm mb-4 md:mb-0">
             <DonationForm email={profileInfoDoc.email} />
           </div>
         </div>
