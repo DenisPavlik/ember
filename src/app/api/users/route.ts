@@ -6,7 +6,7 @@ export async function GET() {
   try {
     await mongoose.connect(process.env.MONGODB_URI as string);
     const profiles = await ProfileInfoModel.find(
-      { username: { $ne: null } },
+      { username: { $exists: true, $ne: "" } },
       "username displayName avatarUrl",
     )
 
