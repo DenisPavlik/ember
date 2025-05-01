@@ -22,13 +22,14 @@ export default function SearchButton() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [users, setUsers] = useState<Users[]>([]);
-  const searchUsers = users.filter((user) =>
-    user.username.toLowerCase().includes(userName.toLowerCase()) ||
-    user.displayName?.toLowerCase().includes(userName.toLowerCase())
+  const searchUsers = users.filter(
+    (user) =>
+      user.username.toLowerCase().includes(userName.toLowerCase()) ||
+      user.displayName?.toLowerCase().includes(userName.toLowerCase())
   );
 
   useEffect(() => {
-    fetch("/api/users")
+    fetch("/api/users", { cache: "no-store" })
       .then(async (res) => {
         if (!res.ok) {
           throw new Error("Failed to fetch random users");
@@ -111,8 +112,8 @@ export default function SearchButton() {
             <div className="px-6 py-4 flex flex-col gap-2">
               {!userName && (
                 <span className="text-xs text-amber-600">
-                <FontAwesomeIcon icon={faFire} /> Trending
-              </span>
+                  <FontAwesomeIcon icon={faFire} /> Trending
+                </span>
               )}
               <div className="flex flex-col gap-2">
                 {(userName ? searchUsers : [...users])
@@ -126,7 +127,9 @@ export default function SearchButton() {
                       className="flex items-center gap-4 px-2 overflow-auto hover:bg-gray-100
             duration-300 rounded-lg hover:cursor-pointer"
                     >
-                      {!userName && <span className="text-xs">#{index + 1}</span>}
+                      {!userName && (
+                        <span className="text-xs">#{index + 1}</span>
+                      )}
                       <Image
                         src={user.avatarUrl || "/images/avatar.png"}
                         width={1000}
@@ -137,9 +140,9 @@ export default function SearchButton() {
                       <span>{user.displayName || user.username}</span>
                     </Link>
                   ))}
-                  {(userName ? searchUsers : users).length === 0 && (
-  <p className="text-sm text-gray-400 px-2">Nothing found</p>
-)}
+                {(userName ? searchUsers : users).length === 0 && (
+                  <p className="text-sm text-gray-400 px-2">Nothing found</p>
+                )}
               </div>
             </div>
             <button type="button" onClick={() => setIsOpen((prev) => !prev)}>
