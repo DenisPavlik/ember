@@ -23,7 +23,7 @@
     "md5": "^2.3.0",
     "mongodb": "^6.6.2",
     "mongoose": "^8.3.5",
-    "next": "14.2.3",
+    "next": "14.2.35",
     "next-auth": "^4.24.7",
     "parse-full-name": "^1.2.6",
     "react": "^18",
