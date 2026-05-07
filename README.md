@@ -2,6 +2,8 @@
 
 A crypto-friendly creator support platform — think "Buy Me a Coffee," but supporters can pay in BTC, ETH, or LTC. Creators sign in with Google, claim a username, and share a public page where fans send tips with an optional message.
 
+**Live demo:** [embertip.vercel.app](https://embertip.vercel.app)
+
 > Portfolio project. Payments are currently mocked (the Cryptomus webhook is wired up and signature-verified, but invoice creation is disabled so donations confirm instantly in development).
 
 ## Features
