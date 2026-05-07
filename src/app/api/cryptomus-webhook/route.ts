@@ -11,8 +11,8 @@ const webhookSchema = z.object({
 });
 
 function safeEqual(a: string, b: string): boolean {
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
+  const bufA = new Uint8Array(Buffer.from(a));
+  const bufB = new Uint8Array(Buffer.from(b));
   if (bufA.length !== bufB.length) return false;
   return crypto.timingSafeEqual(bufA, bufB);
 }
