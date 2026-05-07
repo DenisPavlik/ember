@@ -2,19 +2,19 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart as faHeartRegular } from "@fortawesome/free-regular-svg-icons";
 import Image from "next/image";
 
-interface SugessionCardProps {
+interface SuggestionCardProps {
   className: string,
   img: string;
   description: string;
   supporters: string;
 }
 
-export default function SugessionCard({
+export default function SuggestionCard({
   className,
   img,
   description,
   supporters,
-}: SugessionCardProps) {
+}: SuggestionCardProps) {
   return (
     <div
       className={`absolute ${className} w-[192px] h-[172px] flex flex-col

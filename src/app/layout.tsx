@@ -1,25 +1,33 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans, Fraunces, Special_Elite } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
+import PageTransition from "@/components/PageTransition";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { Toaster } from "react-hot-toast";
-import { Pacifico } from "next/font/google";
 
-const pacifico = Pacifico({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: "400",
-  variable: "--font-pacifico",
+  variable: "--font-sans",
 });
 
-const inter = Inter({ subsets: ["latin"] });
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-display",
+});
+
+const specialElite = Special_Elite({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-typewriter",
+});
 
 export const metadata: Metadata = {
-  title: "Buy Me a Coffee",
+  title: "Ember",
   description:
-    `Buy Me a Coffee makes supporting fun and easy. In just a couple of taps,
-    your fans can make the payment (buy you a coffee) and leave a message.`,
+    `Ember makes supporting creators fun and easy. In just a couple of taps,
+    your fans can send a donation and leave a message.`,
   icons: {
     icon: "/images/logo.png"
   }
@@ -32,11 +40,14 @@ export default async function RootLayout({
 }>) {
   const session = await getServerSession(authOptions);
   return (
-    <html lang="en" className={`${pacifico.variable}`}>
-      <body className={inter.className}>
+    <html
+      lang="en"
+      className={`${jakarta.variable} ${fraunces.variable} ${specialElite.variable}`}
+    >
+      <body className="font-sans">
         <Toaster />
         <Header session={session} />
-        {children}
+        <PageTransition>{children}</PageTransition>
       </body>
     </html>
   );

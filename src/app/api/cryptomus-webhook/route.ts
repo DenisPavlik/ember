@@ -1,30 +1,55 @@
 import { DonationModel } from "@/models/Donation";
+import crypto from "crypto";
 import md5 from "md5";
 import mongoose from "mongoose";
 import { NextResponse } from "next/server";
+import { z } from "zod";
+
+const webhookSchema = z.object({
+  order_id: z.string().min(1),
+  status: z.string(),
+});
+
+function safeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
 
 export async function POST(req: Request) {
-  await mongoose.connect(process.env.MONGODB_URI as string);
+  const apiKey = process.env.CRYPTOMUS_PAYMENT_API_KEY;
+  if (!apiKey) {
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+  }
+
+  const receivedSign = req.headers.get("sign");
+  if (!receivedSign) {
+    return NextResponse.json({ error: "Missing signature" }, { status: 401 });
+  }
 
   const body = await req.json();
-  const apiKey = process.env.CRYPTOMUS_PAYMENT_API_KEY as string;
-  const receivedSign = req.headers.get("sign");
 
-  const base64 = Buffer.from(JSON.stringify(body)).toString("base64");
-  const expectedSign = md5(base64 + apiKey);
+  // Cryptomus signs with md5(base64(jsonBody) + apiKey).
+  // md5 is required by their protocol — keep it, but compare in constant time.
+  const expectedSign = md5(
+    Buffer.from(JSON.stringify(body)).toString("base64") + apiKey
+  );
 
-  console.log("SIGN:", expectedSign);
-
-  if (receivedSign !== expectedSign) {
-    console.warn("Invalid signature received from webhook");
+  if (!safeEqual(receivedSign, expectedSign)) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
-  const { order_id, status } = body;
+  const parsed = webhookSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+  }
+
+  const { order_id, status } = parsed.data;
 
   if (status === "paid") {
+    await mongoose.connect(process.env.MONGODB_URI as string);
     await DonationModel.findByIdAndUpdate(order_id, { paid: true });
-    console.log("Donation marked as paid:", order_id);
   }
 
   return NextResponse.json({ success: true });

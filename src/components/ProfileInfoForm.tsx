@@ -2,13 +2,16 @@
 
 import { saveProfile } from "@/actions/profileInfoActions";
 import UploadButton from "./UploadButton";
-import { useState } from "react";
+import UsernameInput from "./UsernameInput";
+import { useCallback, useState } from "react";
 import { ProfileInfo } from "@/models/ProfileInfo";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRightFromBracket, faSave } from "@fortawesome/free-solid-svg-icons";
 import { signOut } from "next-auth/react";
+
+const BIO_MAX = 500;
 
 type Props = {
   profileInfo: ProfileInfo | null;
@@ -17,6 +20,12 @@ type Props = {
 export default function ProfileInfoForm({ profileInfo }: Props) {
   const [coverUrl, setCoverUrl] = useState(profileInfo?.coverUrl || "");
   const [avatarUrl, setAvatarUrl] = useState(profileInfo?.avatarUrl || "");
+  const [bio, setBio] = useState(profileInfo?.bio || "");
+  const [usernameValid, setUsernameValid] = useState(true);
+  const handleUsernameValidity = useCallback(
+    (valid: boolean) => setUsernameValid(valid),
+    []
+  );
 
   async function handleFormAction(formData: FormData) {
     try {
@@ -43,17 +52,25 @@ export default function ProfileInfoForm({ profileInfo }: Props) {
             <Image src={avatarUrl || '/images/avatar.png'} alt="avatar" width={120} height={120} />
           </div>
           <div className="absolute -bottom-2 -right-2">
-            <UploadButton onUploadComplete={setAvatarUrl} />
+            <UploadButton
+              onUploadComplete={setAvatarUrl}
+              onRemove={() => setAvatarUrl("")}
+              hasValue={!!avatarUrl}
+            />
           </div>
           <input
             type="hidden"
             name="avatarUrl"
             value={avatarUrl}
-            onChange={(e) => setCoverUrl(e.target.value)}
+            onChange={(e) => setAvatarUrl(e.target.value)}
           />
         </div>
         <div className="absolute bottom-2 right-2">
-          <UploadButton onUploadComplete={setCoverUrl} />
+          <UploadButton
+            onUploadComplete={setCoverUrl}
+            onRemove={() => setCoverUrl("")}
+            hasValue={!!coverUrl}
+          />
           <input
             type="hidden"
             name="coverUrl"
@@ -63,18 +80,10 @@ export default function ProfileInfoForm({ profileInfo }: Props) {
         </div>
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <div>
-          <label className="input-label" htmlFor="usernameIn">
-            Username
-          </label>
-          <input
-            id="usernameIn"
-            name="username"
-            defaultValue={profileInfo?.username}
-            type="text"
-            placeholder="alex"
-          />
-        </div>
+        <UsernameInput
+          defaultValue={profileInfo?.username || ""}
+          onValidityChange={handleUsernameValidity}
+        />
         <div>
           <label className="input-label" htmlFor="displaynameIn">
             Display name
@@ -95,14 +104,25 @@ export default function ProfileInfoForm({ profileInfo }: Props) {
         <textarea
           id="bioIn"
           name="bio"
-          defaultValue={profileInfo?.bio}
+          value={bio}
+          onChange={(e) => setBio(e.target.value)}
+          maxLength={BIO_MAX}
           placeholder="Hi, my name is Alex and I am..."
         ></textarea>
+        <div
+          className={`text-xs mt-1 ml-1 text-right ${
+            bio.length >= BIO_MAX ? "text-red-500" : "text-gray-500"
+          }`}
+        >
+          {bio.length} / {BIO_MAX}
+        </div>
       </div>
       <div className="flex items-center justify-between">
         <button
           type="submit"
-          className="bg-yellow-300 rounded-lg py-2 px-4 mt-4 flex items-center gap-2"
+          disabled={!usernameValid}
+          className="bg-yellow-300 rounded-lg py-2 px-4 mt-4 flex items-center gap-2
+          disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <FontAwesomeIcon icon={faSave} />
           Save profile

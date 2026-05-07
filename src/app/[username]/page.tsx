@@ -1,34 +1,46 @@
-"use server";
 import DonationForm from "@/components/DonationForm";
+import DonationList from "@/components/DonationList";
 import DonationStatus from "@/components/DonationStatus";
+import Pagination from "@/components/Pagination";
+import { DONATIONS_PER_PAGE } from "@/lib/config";
 import { Donation, DonationModel } from "@/models/Donation";
 import { ProfileInfo, ProfileInfoModel } from "@/models/ProfileInfo";
-import { faCoffee } from "@fortawesome/free-solid-svg-icons";
+import { faMugHot } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import mongoose from "mongoose";
 import Image from "next/image";
+import { notFound } from "next/navigation";
 
 type Props = {
-  params: {
-    username: string;
-  };
+  params: { username: string };
+  searchParams: { page?: string };
 };
 
-export default async function SingleProfilePage({ params }: Props) {
+export default async function SingleProfilePage({ params, searchParams }: Props) {
   const username = params.username;
   await mongoose.connect(process.env.MONGODB_URI as string);
-  const profileInfoDoc: ProfileInfo | null = await ProfileInfoModel.findOne({
-    username,
-  });
+  const profileInfoDoc: ProfileInfo | null = await ProfileInfoModel.findOne({ username });
 
   if (!profileInfoDoc) {
-    return <div>404 - Profile not found</div>;
+    notFound();
   }
+
+  const totalDonations = await DonationModel.countDocuments({
+    paid: true,
+    email: profileInfoDoc.email,
+  });
+  const totalPages = Math.max(1, Math.ceil(totalDonations / DONATIONS_PER_PAGE));
+  const requestedPage = parseInt(searchParams.page || "1") || 1;
+  const currentPage = Math.min(Math.max(1, requestedPage), totalPages);
+  const skip = (currentPage - 1) * DONATIONS_PER_PAGE;
 
   const donations: Donation[] = await DonationModel.find({
     paid: true,
     email: profileInfoDoc.email,
-  });
+  })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(DONATIONS_PER_PAGE);
 
   return (
     <div>
@@ -37,9 +49,10 @@ export default async function SingleProfilePage({ params }: Props) {
         <Image
           priority
           src={profileInfoDoc.coverUrl || '/images/bgCover.jpg'}
-          alt="coverUrl"
-          width={2024}
-          height={2024}
+          alt={`${profileInfoDoc.displayName || profileInfoDoc.username} cover`}
+          width={1200}
+          height={192}
+          sizes="100vw"
           className="h-48 w-full object-cover object-center"
         />
       </div>
@@ -48,18 +61,16 @@ export default async function SingleProfilePage({ params }: Props) {
           <div className="size-36 overflow-hidden rounded-xl border-2 border-white">
             <Image
               src={profileInfoDoc.avatarUrl || '/images/avatar.png'}
-              alt="coverUrl"
+              alt={`${profileInfoDoc.displayName || profileInfoDoc.username} avatar`}
               width={256}
               height={256}
               className="size-36 object-cover object-center"
             />
           </div>
           <div className="mb-1">
-            <h1 className="text-4xl font-semibold">
-              {profileInfoDoc.displayName}
-            </h1>
+            <h1 className="font-display text-4xl font-semibold tracking-tight">{profileInfoDoc.displayName}</h1>
             <div className="flex gap-1 items-center">
-              <FontAwesomeIcon icon={faCoffee} />
+              <FontAwesomeIcon icon={faMugHot} />
               <span>/</span>
               <span>{profileInfoDoc.username}</span>
             </div>
@@ -67,36 +78,24 @@ export default async function SingleProfilePage({ params }: Props) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <div className="bg-white rounded-xl p-4 shadow-sm  max-h-96 overflow-auto">
+          <div className="bg-white rounded-xl p-4 shadow-sm max-h-[32rem] overflow-auto">
             <h3 className="font-semibold">About {profileInfoDoc.username}</h3>
-            {profileInfoDoc.bio}
+            <p className="mt-1 text-sm text-gray-700">
+              {profileInfoDoc.bio || "This creator hasn't added a bio yet."}
+            </p>
             <hr className="my-4" />
-            <h3 className="font-semibold mt-6">Recent supporters:</h3>
-            {donations.length === 0 && (
-              <>
-                <p className="text-sm text-gray-500 mt-4 w-full">No recent donations</p>
-              </>
-            )}
-            {donations.length > 0 && (
-              <div className="mt-2">
-                {donations.map((donation) => (
-                  <div key={donation.name} className="py-2">
-                    <h3>
-                      <span className="font-semibold">{donation.name}</span>{" "}
-                      <span className="text-gray-400">
-                        bought you{" "}
-                        {donation.amount > 1
-                          ? `${donation.amount} coffee(s)`
-                          : "a coffee"}
-                      </span>
-                    </h3>
-                    <p className="bg-gray-100 rounded-md p-2 mt-1">
-                      {donation.message}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
+            <h3 className="font-semibold mt-6">
+              Recent supporters
+              {totalDonations > 0 && (
+                <span className="text-gray-400 font-normal ml-1">({totalDonations})</span>
+              )}
+            </h3>
+            <DonationList donations={donations} />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              basePath={`/${profileInfoDoc.username}`}
+            />
           </div>
           <div className="bg-white rounded-xl p-4 shadow-sm mb-4 md:mb-0">
             <DonationForm email={profileInfoDoc.email} />

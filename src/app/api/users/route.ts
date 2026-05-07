@@ -1,23 +1,32 @@
+import { USERS_PER_PAGE } from "@/lib/config";
 import { ProfileInfoModel } from "@/models/ProfileInfo";
 import mongoose from "mongoose";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     await mongoose.connect(process.env.MONGODB_URI as string);
+
+    const { searchParams } = new URL(req.url);
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1") || 1);
+    const limit = Math.min(
+      USERS_PER_PAGE,
+      Math.max(1, parseInt(searchParams.get("limit") || String(USERS_PER_PAGE)) || USERS_PER_PAGE)
+    );
+    const skip = (page - 1) * limit;
+
     const profiles = await ProfileInfoModel.find(
       { username: { $exists: true, $ne: "" } },
       "username displayName avatarUrl"
-    );
-
-    // const shuffled = profiles.sort(() => 0.5 - Math.random())
-    // const randomUsers = shuffled.slice(0, 10)
+    )
+      .skip(skip)
+      .limit(limit);
 
     return NextResponse.json(profiles);
   } catch (error) {
-    console.error("Failed to fetch random users:", error);
+    console.error("Failed to fetch users:", error);
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
