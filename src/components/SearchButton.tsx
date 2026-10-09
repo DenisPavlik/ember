@@ -108,7 +108,7 @@ export default function SearchButton() {
             text-gray-500 text-xs md:text-base text-nowrap hover:cursor-text"
       >
         <FontAwesomeIcon icon={faMagnifyingGlass} />
-        <span>Search creators</span>
+        <span className="hidden sm:inline">Search creators</span>
       </button>
 
       <AnimatePresence>

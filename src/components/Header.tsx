@@ -44,10 +44,10 @@ export default function Header({ session }: { session: Session | null }) {
   return (
     <>
       <header className="bg-white">
-        <div className="max-w-6xl mx-auto px-6 lg:px-10 py-4 flex items-center justify-between gap-8">
-          <div className="flex items-center gap-2">
+        <div className="max-w-6xl mx-auto px-6 lg:px-10 py-4 flex items-center justify-between gap-4 sm:gap-8">
+          <div className="flex items-center gap-2 shrink-0">
             <button
-              className="md:hidden"
+              className="lg:hidden"
               aria-label="Open menu"
               aria-expanded={isOpen}
               onClick={() => setIsOpen((prev) => !prev)}
@@ -71,9 +71,9 @@ export default function Header({ session }: { session: Session | null }) {
           <nav
             role="navigation"
             aria-label="Main navigation"
-            className="flex items-center justify-end gap-6 md:gap-10 mt-2 flex-1"
+            className="flex items-center justify-end gap-3 sm:gap-6 md:gap-10 mt-2 flex-1"
           >
-            <div className="hidden md:flex items-center gap-6 lg:gap-10 md:text-lg text-sm font-semibold">
+            <div className="hidden lg:flex items-center gap-10 text-lg font-semibold">
               <Link href={"/about"}>About</Link>
               <Link href={"/faq"}>FAQ</Link>
               <Link href={"/contact"}>Contact</Link>
@@ -124,7 +124,7 @@ export default function Header({ session }: { session: Session | null }) {
       {/* Mobile menu */}
       <AnimatePresence>
         {isOpen && (
-          <div className="md:hidden fixed inset-0 z-50">
+          <div className="lg:hidden fixed inset-0 z-50">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
